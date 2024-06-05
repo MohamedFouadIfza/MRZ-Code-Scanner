@@ -51,7 +51,7 @@ router.post('/getPassportDetails', upload.single('myFile'), async (req, res) => 
 
     if (!isExtVaild) {
 
-        fs.rm(`data/imageDir/${req.file.originalname}`, (deleteErr) => {
+        fs.rm(`../data/imageDir/${req.file.originalname}`, (deleteErr) => {
             if (deleteErr) {
                 console.log('deleteErr')
             }
@@ -97,7 +97,7 @@ router.post('/getPassportDetails', upload.single('myFile'), async (req, res) => 
             console.log('exit')
             // console.log('exit', e)
 
-            fs.rm('data/imageDir/out', {
+            fs.rm('../data/imageDir/out', {
                 recursive: true,
             }, (error) => {
                 if (error) {
