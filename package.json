@@ -14,7 +14,8 @@
     "test": "run-s testonly eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
     "testonly": "jest",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "netlify deploy --prod"
   },
   "repository": {
     "type": "git",
@@ -66,6 +67,9 @@
     "radians-degrees": "^1.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
-    "transformation-matrix": "^1.7.0"
+    "transformation-matrix": "^1.7.0",
+    "netlify-cli": "^12.7.2",
+    "netlify-lambda": "^2.0.15",
+    "serverless-http": "^2.7.0"
   }
 }
