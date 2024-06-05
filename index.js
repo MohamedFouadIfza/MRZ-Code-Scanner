@@ -32,6 +32,11 @@ const upload = multer({ storage: storage })
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/',(req,res)=>{
+    res.status(200).json({
+        ok: "done"
+    })
+})
 app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
 
 
