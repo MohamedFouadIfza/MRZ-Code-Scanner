@@ -13,7 +13,8 @@
     "eslint-fix": "npm run eslint -- --fix",
     "test": "run-s testonly eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
-    "testonly": "jest"
+    "testonly": "jest",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
