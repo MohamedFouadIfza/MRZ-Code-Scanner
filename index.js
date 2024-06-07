@@ -27,6 +27,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
     const imagePath = req.file.path;
+    
+    if (!req.file) {
+        res.status(400).json({
+            erorr: "No File"
+        })
+        return
+    }
+    
     detectQRCode(imagePath)
         .then(qrCode => {
             const qMarkIndedx = qrCode.indexOf('?')
