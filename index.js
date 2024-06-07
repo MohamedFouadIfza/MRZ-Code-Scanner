@@ -4,20 +4,14 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001; // You can change this to any port you prefer
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 const { Worker } = require('worker_threads')
 const { execw } = require('./run/getMrz');
-// const { execm } = require('./run/readMrz');
-
-
-// const storage = multer.memoryStorage()
+const { detectQRCode } = require('./utils/QRCode')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // file.originalname
         cb(null, 'data/imageDir') // Uploads folder
-        // cb("file ex", 'data/imageDir') // Uploads folder
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname)
@@ -25,16 +19,79 @@ const storage = multer.diskStorage({
 
 });
 
-
-
 const upload = multer({ storage: storage })
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/',(req,res)=>{
+
+app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
+    const imagePath = req.file.path;
+    detectQRCode(imagePath)
+        .then(qrCode => {
+            const qMarkIndedx = qrCode.indexOf('?')
+            const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
+            const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
+
+            fetch(readerUrl).then((response) => {
+                return response.json()
+            }).then(({ data }) => {
+                res.status(200).json({
+                    ...data.certificate
+                })
+            })
+        })
+        .catch(err => {
+            res.status(200).json({
+                of: err
+            })
+        }).finally(() => {
+            fs.rm(imagePath, (err) => {
+                if (err) {
+                    console.log('err', err)
+                }
+            })
+        })
+});
+
+//   read qr code if the image jsut a qr code
+// app.post('/uploadQrCode', upload.single('image'), async (req, res) => {
+//     const imagePath = req.file.path;
+
+//     try {
+
+//         console.log('Image uploaded:', imagePath);
+
+//         // Load the image using canvas
+//         const image = await loadImage(imagePath);
+//         const canvas = createCanvas(image.width, image.height);
+//         const ctx = canvas.getContext('2d');
+//         ctx.drawImage(image, 0, 0, image.width, image.height);
+//         const imageData = ctx.getImageData(0, 0, image.width, image.height);
+
+//         // Decode the QR code using jsQR
+//         const code = jsQR(imageData.data, image.width, image.height);
+//         if (!code) {
+//             console.error('Error decoding QR code');
+//             return res.status(500).send('Error reading QR code');
+//         }
+
+//         // Send the decoded QR code value as response
+//         console.log('QR code decoded successfully:', code.data);
+//         res.send(code.data);
+//     } catch (err) {
+//         console.error('Error processing image:', err);
+//         res.status(500).send('Error processing image');
+//     } finally {
+//         // Clean up: remove the uploaded file
+//         fs.unlinkSync(imagePath);
+//     }
+// });
+
+app.get('/', async (req, res) => {
+
     res.status(200).json({
-        ok: "done"
+        satus: "it's work"
     })
 })
 app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
