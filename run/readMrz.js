@@ -48,7 +48,7 @@ async function execm(onRes) {
       await processFile(imagePath);
     }
   }
-  console.log(stats);
+  console.log("stats", stats);
   async function processFile(imagePath) {
     try {
       stats.total += 1;

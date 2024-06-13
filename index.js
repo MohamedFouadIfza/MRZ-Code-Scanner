@@ -7,7 +7,7 @@ const multer = require('multer');
 const fs = require('fs');
 const { Worker } = require('worker_threads')
 const { execw } = require('./run/getMrz');
-const { detectQRCode } = require('./utils/QRCode')
+// const { detectQRCode } = require('./utils/QRCode')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -25,42 +25,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
-    const imagePath = req.file.path;
-    
-    if (!req.file) {
-        res.status(400).json({
-            erorr: "No File"
-        })
-        return
-    }
-    
-    detectQRCode(imagePath)
-        .then(qrCode => {
-            const qMarkIndedx = qrCode.indexOf('?')
-            const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
-            const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
-
-            fetch(readerUrl).then((response) => {
-                return response.json()
-            }).then(({ data }) => {
-                res.status(200).json({
-                    ...data.certificate
-                })
-            })
-        })
-        .catch(err => {
-            res.status(200).json({
-                of: err
-            })
-        }).finally(() => {
-            fs.rm(imagePath, (err) => {
-                if (err) {
-                    console.log('err', err)
-                }
-            })
-        })
-});
 
 //   read qr code if the image jsut a qr code
 // app.post('/uploadQrCode', upload.single('image'), async (req, res) => {
