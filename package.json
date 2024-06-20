@@ -60,7 +60,7 @@
     "mkdirp": "^0.5.1",
     "ml-distance": "^2.1.1",
     "ml-kernel": "^2.3.4",
-    "ml-matrix": "^5.0.1",
+    "ml-matrix": "^5.3.0",
     "ml-param-grid": "^1.0.0",
     "mrz": "^3.1.0",
     "multer": "^1.4.5-lts.1",
