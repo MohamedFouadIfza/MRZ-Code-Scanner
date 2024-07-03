@@ -76,6 +76,10 @@ app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
         return
     }
 
+    if(req.file) {
+        console.log('file', req.file)
+    }
+
     const isExtVaild = req.file.filename.endsWith('jpg') || req.file.filename.endsWith('png') || req.file.filename.endsWith('jpeg')
 
     if (!isExtVaild) {
