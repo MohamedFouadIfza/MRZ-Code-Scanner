@@ -24,6 +24,28 @@ const upload = multer({ storage: storage })
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+ function convertToDate(dateString) {
+    if (dateString.length !== 6) {
+      throw new Error("Invalid date string format");
+    }
+
+    // Extract year, month, and day parts
+    let year = parseInt(dateString.substring(0, 2), 10);
+    let month = parseInt(dateString.substring(2, 4), 10) - 1; // Months are 0-indexed in JavaScript Date
+    let day = parseInt(dateString.substring(5, 6), 10);
+
+    if(year >= 50) {
+      year += 1900;
+    } else {
+      year += 2000;
+    }
+    // Assuming the year is in the 1900s
+    
+
+    // Create and return the date
+    return new Date(year, month, day);
+  }
+
 
 
 //   read qr code if the image jsut a qr code
@@ -120,8 +142,14 @@ app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
                     erorr: msg
                 })
             } else {
+               const expirationDate = msg.expirationDate ?  convertToDate(msg.expirationDate) : null;
+                const birthDate = msg.birthDate ?  convertToDate(msg.birthDate) : null
                 res.status(200).json({
-                    data: msg
+                    data: {
+                        ...msg,
+                        expirationDate,
+                        birthDate
+                    } 
                 })
             }
         })
