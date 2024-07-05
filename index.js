@@ -341,8 +341,8 @@ app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
             } else {
                const expirationDate = msg.expirationDate ?  convertToDate(msg.expirationDate) : null;
                 const birthDate = msg.birthDate ?  convertToDate(msg.birthDate) : null
-                const nationality = msg.nationality ? passportCountries.find(item=> item.code === msg.nationality) : null
-               const  issuingState = msg.issuingState ? passportCountries.find(item=> item.code === msg.issuingState) : null 
+                const nationality = msg.nationality ? passportCountries.find(item=> item.code === msg.nationality).name : null
+               const  issuingState = msg.issuingState ? passportCountries.find(item=> item.code === msg.issuingState).name : null 
                 res.status(200).json({
                     data: {
                         ...msg,
