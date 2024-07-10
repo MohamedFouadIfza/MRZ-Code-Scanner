@@ -171,7 +171,7 @@ app.post('/getPassportDetails/pdf', upload.single('myFile'), async (req, res) =>
 
     try {
 
-        await pdfToPng(`data/imageDir/${req.file.originalname}`, {outputFolder: "./data/imageDir",  disableFontFace: false,viewportScale: 2.0,})
+        await pdfToPng(`data/imageDir/${req.file.originalname}`, {outputFolder: "./data/imageDir",  disableFontFace: false, viewportScale: 2, pagesToProcess:[1]})
 
         await execw();
         const worker = new Worker('./run/readMrz.js');
