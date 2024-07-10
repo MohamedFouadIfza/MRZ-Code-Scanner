@@ -68,6 +68,6 @@
     "radians-degrees": "^1.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
-    "transformation-matrix": "^1.7.0"
+    "transformation-matrix": "^1.15.3"
   }
 }
