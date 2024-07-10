@@ -7,17 +7,11 @@ const minimist = require('minimist');
 const IJS = require('image-js').Image;
 const { parse } = require('mrz');
 
-const { readMrz } = require('../src');
-const { parentPort } = require('worker_threads')
-// const argv = minimist(process.argv.slice(2));
-const argv = {
-  file:"",
-  dir: "data/imageDir/out/crop",
-  reference : 'data/imageDir/ground.csv'
-}
+const { readMrz } = require('..');
 
-// argv.
-execm().catch(console.error);
+const argv = minimist(process.argv.slice(2));
+
+exec().catch(console.error);
 
 const stats = {
   total: 0,
@@ -25,7 +19,7 @@ const stats = {
   couldParse: 0
 };
 
-async function execm(onRes) {
+async function exec() {
   const expected = await getExpected();
 
   if (argv.file) {
@@ -44,11 +38,10 @@ async function execm(onRes) {
       );
       console.log(`process ${file}`);
       const imagePath = join(dirname, file);
-      // console.log('argvargvargvargvargvargv',argv)
       await processFile(imagePath);
     }
   }
-  console.log("stats", stats);
+  console.log(stats);
   async function processFile(imagePath) {
     try {
       stats.total += 1;
@@ -57,26 +50,15 @@ async function execm(onRes) {
         debug: true,
         saveName: join(parsedPath.dir, '../multiMask/', parsedPath.base)
       });
-      // console.log('result', result);
-      
+      console.log(result);
       const parsed = parse(result);
       stats.couldParse += 1;
-      console.log('valid', parsed.fields);
-
-      parentPort.postMessage(parsed.fields)
-
-      // if(parsed.valid) {
-      //   // console.log('data',parsed.fields)
-        
-      //   // onRes && onRes(parsed.fields)
-      // }
-
+      console.log('valid', parsed.valid);
       if (!parsed.valid) {
         console.log(parsed.details.filter((d) => !d.valid).map((d) => d.error));
       } else {
         stats.valid += 1;
       }
-      // return
       console.log(imagePath);
       const nameWithoutExt = parsedPath.base.replace(parsedPath.ext, '');
       console.log(nameWithoutExt);
@@ -109,7 +91,6 @@ async function execm(onRes) {
         console.log('no reference to compare result');
       }
     } catch (e) {
-      parentPort.postMessage(e.message)
       console.log('read error', e.message, e.stack);
     }
   }
@@ -135,8 +116,3 @@ async function getExpected() {
   }
   return expected;
 }
-
-
-// module.exports = {
-//   execm
-// }

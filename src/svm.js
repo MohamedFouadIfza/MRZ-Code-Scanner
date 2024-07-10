@@ -1,55 +1,45 @@
 'use strict';
-const ENVIRONMENT_IS_WEB = typeof window === 'object';
-const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
-
 const path = require('path');
 
-// babelify will generate distinct names if we define
-// the same constants both in "if" and "else" blocks
-// Variables are fine for me...
-var fs;
-var SVMPromise;
-
-if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  const request = require('request-promise');
-  fs = {
-    readFile: function (url, encoding) {
-      var dirname = __dirname.split('/');
-      dirname.pop();
-      url = url.replace(dirname.join('/'), '');
-      return request({
-        /* global self */
-        /* global location */
-        /* eslint no-undef: "error" */
-        url: ((self && self.config && self.config.fsRootUrl) ? `${self.config.fsRootUrl}/${url}` : `${location.origin}/${url}`),
-        encoding: null,
-        resolveWithFullResponse: false
-      })
-        .then(function (body) {
-          var buf = Buffer.from(body);
-          return (encoding) ? buf.toString(encoding) : buf;
-        });
-    },
-    writeFile: function () {
-      throw new Error('writeFile not implemented');
-    }
-  };
-  SVMPromise = Promise.resolve(require('libsvm-js/asm'));
-} else {
-  // use a variable for the module name so that browserify does not include it
-  var _module = 'fs-extra';
-  fs = require(_module);
-  _module = 'libsvm-js/wasm';
-  SVMPromise = Promise.resolve(require(_module));
-}
-
+const fs = require('fs-extra');
+const groupBy = require('lodash.groupby');
 const hog = require('hog-features');
+const SVMPromise = Promise.resolve(require('libsvm-js/wasm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
 const uniq = require('lodash.uniq');
 const BSON = require('bson');
 
 let SVM;
+
+async function loadData(dir) {
+  const { readImages } = require('../src/util/readWrite');
+  dir = path.resolve(path.join(__dirname, '..'), dir);
+  const data = await readImages(dir);
+  for (let entry of data) {
+    let { image } = entry;
+    entry.descriptor = extractHOG(image);
+    entry.height = image.height;
+  }
+
+  const groupedData = groupBy(data, (d) => d.card);
+  for (let card in groupedData) {
+    const heights = groupedData[card].map((d) => d.height);
+    const maxHeight = Math.max.apply(null, heights);
+    const minHeight = Math.min.apply(null, heights);
+    for (let d of groupedData[card]) {
+      // This last descriptor is very important to differentiate numbers and letters
+      // Because with OCR-B font, numbers are slightly higher than numbers
+      let bonusFeature = 1;
+      if (minHeight !== maxHeight) {
+        bonusFeature = (d.height - minHeight) / (maxHeight - minHeight);
+      }
+      d.descriptor.push(bonusFeature);
+    }
+  }
+  return data;
+}
+
 function extractHOG(image) {
   image = image.scale({ width: 20, height: 20 });
   image = image.pad({
@@ -199,5 +189,6 @@ module.exports = {
   train,
   predict,
   extractHOG,
-  predictImages
+  predictImages,
+  loadData
 };

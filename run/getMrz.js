@@ -5,20 +5,14 @@ const path = require('path');
 const fs = require('fs-extra');
 const minimist = require('minimist');
 const { Image } = require('image-js');
-// const { parentPort } = require('worker_threads')
-const { getMrz } = require('../src');
 
-// const argv = minimist(process.argv.slice(2));
-const argv = {
-  file:"",
-  dir: "data/imageDir"
-}
+const { getMrz } = require('..');
 
+const argv = minimist(process.argv.slice(2));
 
-// execw().catch(console.error);
+exec().catch(console.error);
 
-
-async function execw() {
+async function exec() {
   if (argv.file) {
     const pathname = path.resolve(argv.file);
     console.time(pathname);
@@ -183,8 +177,4 @@ function getTableRow(imagePath, prefixes, images) {
 }</td>
     </tr>
   `;
-}
-
-module.exports = {
-  execw
 }

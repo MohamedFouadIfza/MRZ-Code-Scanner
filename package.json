@@ -63,6 +63,7 @@
     "ml-matrix": "^5.0.1",
     "ml-param-grid": "^1.0.0",
     "mrz": "^3.1.0",
+    "mrz-detection": "^0.4.1",
     "multer": "^1.4.5-lts.1",
     "ocr-tools": "^0.1.1",
     "radians-degrees": "^1.0.0",
