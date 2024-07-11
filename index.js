@@ -106,21 +106,39 @@ app.post('/getPassportDetails/pdf', upload.single('myFile'), async (req, res) =>
                     err: msg.errMsg
                 })
             } else {
-                const expirationDate = ms.expirationDate ? convertToDate(ms.expirationDate) : null;
+                const expirationDate = ms.expirationDate ? convertToDate(ms.expirationDate, true) : null;
                 const birthDate = ms.birthDate ? convertToDate(ms.birthDate) : null
                 const nationality = ms.nationality ? passportCountries.find(item => item.code === ms.nationality).name : null
                 const issuingState = ms.issuingState ? passportCountries.find(item => item.code === ms.issuingState).name : null
+                let fullName = "";
+
+                if (ms.firstName && ms.lastName) {
+                    fullName = ms.firstName + " " + ms.lastName
+                }
+
+                if (ms.firstName && ms.lastName == "") {
+                    fullName = ms.firstName
+                }
+
+                if (ms.firstName == "" && ms.lastName) {
+                    fullName = ms.lastName
+                }
+
+                const data = {
+                    ...ms,
+                    expirationDate,
+                    birthDate,
+                    orignalBirthDate: ms.birthDate,
+                    orignalexpirationDate: ms.expirationDate,
+                    nationalityCode: ms.nationality,
+                    nationality,
+                    issuingStateCode: ms.issuingState,
+                    issuingState,
+                    fullName
+                }
+                console.log('data', data)
                 return res.status(200).json({
-                    data: {
-                        ...ms,
-                        expirationDate,
-                        birthDate,
-                        nationalityCode: ms.nationality,
-                        nationality,
-                        issuingStateCode: ms.issuingState,
-                        issuingState,
-                        fullName: ms.firstName ? ms.firstName + " " + ms.lastName : ms.firstName + ms.lastName
-                    }
+                    data
                 })
             }
         });

@@ -1,26 +1,31 @@
 
-function convertToDate(dateString) {
-    if (dateString.length !== 6) {
-      throw new Error("Invalid date string format");
-    }
-
-    // Extract year, month, and day parts
-    let year = parseInt(dateString.substring(0, 2), 10);
-    let month = parseInt(dateString.substring(2, 4), 10) - 1; // Months are 0-indexed in JavaScript Date
-    let day = parseInt(dateString.substring(5, 6), 10);
-
-    if(year >= 50) {
-      year += 1900;
-    } else {
-      year += 2000;
-    }
-    // Assuming the year is in the 1900s
-    
-
-    // Create and return the date
-    return new Date(year, month, day);
+function convertToDate(dob, forExpiry = false) {
+  if (dob.length !== 6) {
+    throw new Error("Invalid date string format");
+  }
+  // Extract year, month, and day from the input
+  const year = dob.slice(0, 2);
+  const month = dob.slice(2, 4) - 1; // Month is 0-indexed in the Date constructor
+  const day = dob.slice(4, 6);
+  let fullYear;
+  if (!forExpiry) {
+    // Assume the year is in the 2000s if the year is less than or equal to the current year
+    const currentYear = new Date().getFullYear() % 100; // Get the last two digits of the current year
+    fullYear = parseInt(year, 10) <= currentYear ? `20${year}` : `19${year}`;
+  } else {
+    fullYear = `20${year}`
   }
 
+
+  // Create a new Date object
+  const date = new Date(fullYear, month, day);
+
+  // Format the date as DD/MM/YYYY
+  const formattedDate = date.toLocaleDateString('en-GB').replaceAll('/', ",");
+
+  return formattedDate;
+}
+
 module.exports = {
-    convertToDate   
+  convertToDate
 }
