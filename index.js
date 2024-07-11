@@ -5,19 +5,12 @@ const app = express();
 const port = process.env.PORT || 3001; // You can change this to any port you prefer
 const multer = require('multer');
 const fs = require('fs');
-const { emptyDir, readdir, ensureDir } = require('fs-extra')
-const { Worker } = require('worker_threads')
-const path = require('path');
-const library = require('mrz-detection')
-// import library from 'mrz-detection'
-// const { execw } = require('./run/getMrz');
-// const { passportCountries } = require('./utils/Countries')
-// const { convertToDate } = require('./utils')
 const { pdfToPng } = require('pdf-to-png-converter');
-const { default: Image } = require('image-js');
 const { ExtractMRZFromImage } = require('./MRZfromImage');
-const { readMRZFromImage } = require('./ReadMRZ');
-
+const { Worker } = require("worker_threads");
+const { passportCountries } = require('./utils/Countries')
+const { convertToDate } = require('./utils');
+const { deleteAllFilesFormOS } = require('./utils/file');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'data/imageDir') // Uploads folder
@@ -41,123 +34,6 @@ app.get('/', async (req, res) => {
         satus: "it's work"
     })
 })
-
-
-
-async function saveImages(imagePath, images, out) {
-    const filename = path.basename(imagePath);
-    const ext = path.extname(filename);
-    const pngName = filename.replace(ext, '.png');
-    for (const prefix in images) {
-        const kind = path.join(out, prefix);
-        await ensureDir(kind);
-        await images[prefix].save(path.join(kind, pngName));
-    }
-}
-
-
-// app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
-
-
-//     if (!req.file) {
-//         res.status(400).json({
-//             erorr: "No File"
-//         })
-//         return
-//     }
-
-//     if (req.file) {
-//         console.log('file', req.file)
-//     }
-
-//     const isExtVaild = req.file.filename.endsWith('jpg') || req.file.filename.endsWith('png') || req.file.filename.endsWith('jpeg')
-
-//     if (!isExtVaild) {
-
-//         fs.rm(`data/imageDir/${req.file.originalname}`, (deleteErr) => {
-//             if (deleteErr) {
-//                 console.log('deleteErr')
-//             }
-//         })
-
-//         res.status(400).json({
-//             erorr: "File Extention Not Supported only ( png | jpg | jpeg ) Supported."
-//         })
-//         return
-//     }
-
-
-//     try {
-//         await execw();
-//         const worker = new Worker('./run/readMrz.js');
-
-//         worker.on('error', e => {
-//             console.log('erorr', e)
-//         })
-
-
-//         worker.on('messageerror', e => {
-//             console.log('messageerror', e)
-//         })
-
-
-//         worker.on('message', msg => {
-
-
-//             if (typeof msg == "string") {
-//                 res.status(400).json({
-//                     erorr: msg
-//                 })
-//             } else {
-//                 const expirationDate = msg.expirationDate ? convertToDate(msg.expirationDate) : null;
-//                 const birthDate = msg.birthDate ? convertToDate(msg.birthDate) : null
-//                 const nationality = msg.nationality ? passportCountries.find(item => item.code === msg.nationality).name : null
-//                 const issuingState = msg.issuingState ? passportCountries.find(item => item.code === msg.issuingState).name : null
-//                 res.status(200).json({
-//                     data: {
-//                         ...msg,
-//                         expirationDate,
-//                         birthDate,
-//                         nationalityCode: msg.nationality,
-//                         nationality,
-//                         issuingStateCode: msg.issuingState,
-//                         issuingState
-//                     }
-//                 })
-//             }
-//         })
-
-//         worker.on('exit', e => {
-//             console.log('exit')
-
-//             fs.rm('data/imageDir/out', {
-//                 recursive: true,
-//             }, (error) => {
-//                 if (error) {
-//                     console.log(error);
-//                 }
-//                 else {
-//                     console.log("Recursive: Directories Deleted!");
-//                 }
-//             })
-
-//             fs.rm(`data/imageDir/${req.file.originalname}`, (error) => {
-//                 if (error) {
-//                     console.log(error);
-//                 }
-//                 else {
-//                     console.log("File Deleted!");
-//                 }
-//             })
-//         })
-
-
-//     } catch (e) {
-//         console.log('eeee', e)
-//     }
-
-
-// })
 
 
 app.post('/getPassportDetails/pdf', upload.single('myFile'), async (req, res) => {
@@ -193,27 +69,82 @@ app.post('/getPassportDetails/pdf', upload.single('myFile'), async (req, res) =>
     try {
         await pdfToPng(`data/imageDir/${req.file.originalname}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
     } catch (e) {
-        res.status(400).json({
-            "Convert To Image": e
+        return res.status(400).json({
+            reason: "Convert To Image",
+            err: e
         })
     }
 
     try {
         await ExtractMRZFromImage()
     } catch (e) {
-        res.status(400).json({
-            "Extract MRZ From Image": e
+
+        deleteAllFilesFormOS(req)
+
+        if (e?.message) {
+            return res.status(400).json({
+                reason: "Extract MRZ From Image",
+                err: e?.message
+            })
+        }
+
+        return res.status(400).json({
+            reason: "Extract MRZ From Image",
+            err: e
         })
     }
 
     try {
-        const finsalresult = await readMRZFromImage()
-        res.status(200).json({
-            result: finsalresult[0].fields
-        })
+        const file = __dirname + "/ReadMRZ.js";
+        const worker = new Worker(file);
+
+        worker.on("message", (msg) => {
+            // deleteAllFilesFormOS(req)
+            const ms = msg.fields
+            if (msg.err) {
+                return res.status(400).json({
+                    err: msg.errMsg
+                })
+            } else {
+                const expirationDate = ms.expirationDate ? convertToDate(ms.expirationDate) : null;
+                const birthDate = ms.birthDate ? convertToDate(ms.birthDate) : null
+                const nationality = ms.nationality ? passportCountries.find(item => item.code === ms.nationality).name : null
+                const issuingState = ms.issuingState ? passportCountries.find(item => item.code === ms.issuingState).name : null
+                return res.status(200).json({
+                    data: {
+                        ...ms,
+                        expirationDate,
+                        birthDate,
+                        nationalityCode: ms.nationality,
+                        nationality,
+                        issuingStateCode: ms.issuingState,
+                        issuingState,
+                        fullName: ms.firstName ? ms.firstName + " " + ms.lastName : ms.firstName + ms.lastName
+                    }
+                })
+            }
+        });
+
+        worker.on("error", (msg) => {
+            return res.status(400).json({
+                Reason: "worker",
+                err: msg
+            })
+        });
+
+        worker.on("exit", (code) => {
+            if (code !== 0) {
+                console.log(`Worker stopped with exit code ${code}`)
+            };
+            deleteAllFilesFormOS(req)
+        });
+
     } catch (e) {
-        res.status(400).json({
-            "Read MRZ From Image": e
+        console.log('lo', e)
+        deleteAllFilesFormOS(req)
+        return res.status(400).json({
+            Reason: "unknown",
+            err: e
         })
     }
 
