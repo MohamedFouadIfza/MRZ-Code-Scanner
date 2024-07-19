@@ -98,8 +98,8 @@ app.post('/getPassportDetails', upload.single('myFile'), async (req, res) => {
             } else {
                 const expirationDate = ms.expirationDate ? convertToDate(ms.expirationDate, true) : null;
                 const birthDate = ms.birthDate ? convertToDate(ms.birthDate) : null
-                const nationality = ms.nationality ? passportCountries.find(item => item.code === ms.nationality).name : null
-                const issuingState = ms.issuingState ? passportCountries.find(item => item.code === ms.issuingState).name : null
+                const nationality = ms.nationality ? passportCountries.find(item => item.code === ms.nationality)?.name : null
+                const issuingState = ms.issuingState ? passportCountries.find(item => item.code === ms.issuingState)?.name : null
                 let fullName = "";
 
                 if (ms.firstName && ms.lastName) {
