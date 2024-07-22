@@ -37,6 +37,7 @@ const getPassportDetails = async (base64Image) => {
             }
         ]
     })
+    console.log("response.choices[0].message.content", response.choices[0].message.content)
     return extractFields(response.choices[0].message.content)
 }
 
