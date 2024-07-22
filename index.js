@@ -33,7 +33,6 @@ app.get('/', async (req, res) => {
 
     res.status(200).json({
         satus: "it's work",
-        key: process.env.apiKey
     })
 })
 

@@ -15,7 +15,7 @@ const extractFields = (str) => {
 
 const getPassportDetails = async (base64Image) => {
     const openai = new OpenAI({
-        apiKey: process.env.apiKey
+        apiKey: process.env.NEW_API
     })
     const response = await openai.chat.completions.create({
         model: "gpt-4o",
