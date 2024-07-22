@@ -37,6 +37,26 @@ app.get('/', async (req, res) => {
 })
 
 
+// documentCode: 'P',
+// issuingState: 'United States of America',
+// lastName: 'FIDEL',
+// firstName: 'MICHAEL J',
+// documentNumber: '561462352',
+// documentNumberCheckDigit: '0',
+// nationality: 'United States of America',
+// birthDate: '20,10,1956',
+// birthDateCheckDigit: '0',
+// sex: 'male',
+// expirationDate: '12,02,2028',
+// expirationDateCheckDigit: '7',
+// personalNumber: '717088837 5212',
+// personalNumberCheckDigit: '3',
+// compositeCheckDigit: '6',
+// orignalBirthDate: '561020',
+// orignalexpirationDate: '280212',
+// nationalityCode: 'USA',
+// issuingStateCode: 'USA',
+// fullName: 'MICHAEL J FIDEL'
 
 app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
 
@@ -80,9 +100,12 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
                 ...Response,
                 sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
                 expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response.birthDate.includes('/') ? Response.birthDate.replaceAll("/", ",") : Response.birthDate
+                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                nationality: Response?.country.length <= 3 ? passportCountries.find(item => item.code == Response?.country.toUpperCase())?.name : Response?.country,
+                issuingState: Response?.country_of_Issue.length <= 3 ? passportCountries.find(item => item.code == Response?.country_of_Issue.toUpperCase())?.name : Response?.country_of_Issue
             })
         } catch (e) {
+            console.log("eeeee", e)
             res.status(200).json({
                 ...e
             })
