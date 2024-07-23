@@ -97,12 +97,14 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
             const Response = await getPassportDetails(`data:${req.file.mimetype};base64,${dta.toString('base64')}`)
             deleteAllFilesFormOS(req, true)
             res.status(200).json({
-                ...Response,
-                sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                nationality: extractCountryName(Response?.country),
-                issuingState: extractCountryName(Response?.country_of_Issue)
+                data: {
+                    ...Response,
+                    sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
+                    expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
+                    birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                    nationality: extractCountryName(Response?.country),
+                    issuingState: extractCountryName(Response?.country_of_Issue)
+                }
             })
         } catch (e) {
             console.log("eeeee", e)
@@ -168,12 +170,14 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
             const Response = await getPassportDetails(`data:image/png;base64,${dta.toString('base64')}`)
             deleteAllFilesFormOS(req, false)
             res.status(200).json({
-                ...Response,
-                sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                nationality: extractCountryName(Response?.country),
-                issuingState: extractCountryName(Response?.country_of_Issue)
+                data: {
+                    ...Response,
+                    sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
+                    expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
+                    birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                    nationality: extractCountryName(Response?.country),
+                    issuingState: extractCountryName(Response?.country_of_Issue)
+                }
             })
         } catch (e) {
             res.status(200).json({
