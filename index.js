@@ -9,7 +9,7 @@ const { pdfToPng } = require('pdf-to-png-converter');
 const { ExtractMRZFromImage } = require('./MRZfromImage');
 const { Worker } = require("worker_threads");
 const { passportCountries, extractCountryName } = require('./utils/Countries')
-const { convertToDate } = require('./utils');
+const { convertToDate, formateGPTDate } = require('./utils');
 const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
 const storage = multer.diskStorage({
@@ -100,9 +100,9 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
             const data = {
                 ...Response,
                 sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                nationality: extractCountryName(Response?.country),
+                expirationDate: formateGPTDate(Response?.expirationDate),
+                birthDate: formateGPTDate(Response?.birthDate),
+                nationality: extractCountryName(Response?.nationality),
                 countryState: extractCountryName(Response?.country_of_Issue),
                 issuingState: Response?.place_of_Issue
             }
@@ -176,8 +176,8 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
             const data = {
                 ...Response,
                 sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                expirationDate: formateGPTDate(Response?.expirationDate),
+                birthDate: formateGPTDate(Response?.birthDate),
                 nationality: extractCountryName(Response?.nationality),
                 countryState: extractCountryName(Response?.country_of_Issue),
                 issuingState: Response?.place_of_Issue

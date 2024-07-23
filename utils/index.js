@@ -26,6 +26,18 @@ function convertToDate(dob, forExpiry = false) {
   return formattedDate;
 }
 
+
+function formateGPTDate(dt = "") {
+
+  if (dt.includes(".")) {
+    return dt.replaceAll(".", ",")
+  } else if (dt.includes("/")) {
+    return dt.replaceAll("/", ",")
+  } else {
+    return dt
+  }
+}
 module.exports = {
-  convertToDate
+  convertToDate,
+  formateGPTDate
 }
