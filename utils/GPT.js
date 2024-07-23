@@ -38,7 +38,7 @@ const extractAndConvertFields = (str) => {
       if (key === 'birthDate' || key === 'expirationDate') {
         const dateParts = value.split(' ');
         const day = dateParts[0].padStart(2, '0');
-        const month = monthMap[dateParts[1].toUpperCase()];
+        const month = monthMap[dateParts[1]?.toUpperCase()];
         const year = dateParts[2];
         result[key] = `${day}-${month}-${year}`;
       } else {
@@ -61,8 +61,7 @@ const getPassportDetails = async (base64Image) => {
                 content: [
                     {
                         type: 'text',
-                        // text: "extract in English fullName,firstName,lastName,sex,documentNumber,expirationDate and birthDate as format 16,01,2025, country_of_Issue, country from this passport as JSON only"
-                        text: "extract in English fullName, firstName, lastName, sex, documentNumber, expirationDate, birthDate, country_of_Issue, country from this passport as JSON only"
+                        text: "act as passport reader, extract in English fullName,firstName,lastName,sex,documentNumber,expirationDate and birthDate as format 16,01,2025, country_of_Issue, country country not nationalty from this passport as JSON only"
                     },
                     {
                         type: "image_url",
@@ -75,10 +74,9 @@ const getPassportDetails = async (base64Image) => {
         ]
     })
     console.log("response.choices[0].message.content", response.choices[0].message.content)
-    return extractAndConvertFields(response.choices[0].message.content)
+    return extractFields(response.choices[0].message.content)
 }
 
 module.exports = {
     getPassportDetails,
-    extractFields
 }

@@ -8,7 +8,7 @@ const fs = require('fs');
 const { pdfToPng } = require('pdf-to-png-converter');
 const { ExtractMRZFromImage } = require('./MRZfromImage');
 const { Worker } = require("worker_threads");
-const { passportCountries } = require('./utils/Countries')
+const { passportCountries, extractCountryName } = require('./utils/Countries')
 const { convertToDate } = require('./utils');
 const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
@@ -101,8 +101,8 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
                 sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
                 expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
                 birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                nationality: Response?.country.length <= 3 ? passportCountries.find(item => item.code == Response?.country.toUpperCase())?.name : Response?.country,
-                issuingState: Response?.country_of_Issue.length <= 3 ? passportCountries.find(item => item.code == Response?.country_of_Issue.toUpperCase())?.name : Response?.country_of_Issue
+                nationality: extractCountryName(Response?.country),
+                issuingState: extractCountryName(Response?.country_of_Issue)
             })
         } catch (e) {
             console.log("eeeee", e)
@@ -171,7 +171,9 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
                 ...Response,
                 sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
                 expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                birthDate: Response.birthDate.includes('/') ? Response.birthDate.replaceAll("/", ",") : Response.birthDate
+                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                nationality: extractCountryName(Response?.country),
+                issuingState: extractCountryName(Response?.country_of_Issue)
             })
         } catch (e) {
             res.status(200).json({
