@@ -104,7 +104,7 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
                 birthDate: formateGPTDate(Response?.birthDate),
                 nationality: extractCountryName(Response?.nationality),
                 countryState: extractCountryName(Response?.country_of_Issue),
-                issuingState: Response?.place_of_Issue
+                issuingState: Response?.placeOfIssue,
             }
             console.log("data", data)
             res.status(200).json({
@@ -180,7 +180,7 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
                 birthDate: formateGPTDate(Response?.birthDate),
                 nationality: extractCountryName(Response?.nationality),
                 countryState: extractCountryName(Response?.country_of_Issue),
-                issuingState: Response?.place_of_Issue
+                issuingState: Response?.placeOfIssue,
             }
             console.log("data", data)
             res.status(200).json({
