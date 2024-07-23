@@ -96,16 +96,19 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
         try {
             const Response = await getPassportDetails(`data:${req.file.mimetype};base64,${dta.toString('base64')}`)
             deleteAllFilesFormOS(req, true)
+
+            const data = {
+                ...Response,
+                sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
+                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
+                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                nationality: extractCountryName(Response?.country),
+                countryState: extractCountryName(Response?.country_of_Issue),
+                issuingState: Response?.place_of_Issue
+            }
+            console.log("data", data)
             res.status(200).json({
-                data: {
-                    ...Response,
-                    sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                    expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                    birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                    nationality: extractCountryName(Response?.country),
-                    countryState: extractCountryName(Response?.country_of_Issue),
-                    issuingState: Response?.place_of_Issue
-                }
+                data
             })
         } catch (e) {
             console.log("eeeee", e)
@@ -170,16 +173,18 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
         try {
             const Response = await getPassportDetails(`data:image/png;base64,${dta.toString('base64')}`)
             deleteAllFilesFormOS(req, false)
+            const data = {
+                ...Response,
+                sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
+                expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
+                birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
+                nationality: extractCountryName(Response?.nationality),
+                countryState: extractCountryName(Response?.country_of_Issue),
+                issuingState: Response?.place_of_Issue
+            }
+            console.log("data", data)
             res.status(200).json({
-                data: {
-                    ...Response,
-                    sex: Response.sex == "m" || Response.sex == "M" || Response.sex == "male" ? "male" : "female",
-                    expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
-                    birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
-                    nationality: extractCountryName(Response?.country),
-                    countryState: extractCountryName(Response?.country_of_Issue),
-                    issuingState: Response?.place_of_Issue
-                }
+                data
             })
         } catch (e) {
             res.status(200).json({
