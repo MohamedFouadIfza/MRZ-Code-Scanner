@@ -103,7 +103,8 @@ app.post('/gpt/images', upload.single('myFile'), async (req, res) => {
                     expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
                     birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
                     nationality: extractCountryName(Response?.country),
-                    issuingState: extractCountryName(Response?.country_of_Issue)
+                    countryState: extractCountryName(Response?.country_of_Issue),
+                    issuingState: Response?.place_of_Issue
                 }
             })
         } catch (e) {
@@ -176,7 +177,8 @@ app.post('/gpt/pdf', upload.single('myFile'), async (req, res) => {
                     expirationDate: Response.expirationDate.includes('/') ? Response.expirationDate.replaceAll("/", ",") : Response.expirationDate,
                     birthDate: Response?.birthDate.includes('/') ? Response?.birthDate.replaceAll("/", ",") : Response?.birthDate,
                     nationality: extractCountryName(Response?.country),
-                    issuingState: extractCountryName(Response?.country_of_Issue)
+                    countryState: extractCountryName(Response?.country_of_Issue),
+                    issuingState: Response?.place_of_Issue
                 }
             })
         } catch (e) {

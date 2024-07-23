@@ -61,7 +61,7 @@ const getPassportDetails = async (base64Image) => {
                 content: [
                     {
                         type: 'text',
-                        text: "act as passport reader, extract in English fullName,firstName,lastName,sex,documentNumber,expirationDate and birthDate as format 16,01,2025, country_of_Issue, country country not nationalty from this passport as JSON only"
+                        text: "act as passport reader, extract in English fullName,firstName,lastName,sex,documentNumber,expirationDate and birthDate as format 16,01,2025, place_of_Issue,country_of_Issue, country country not nationalty from this passport as JSON only"
                     },
                     {
                         type: "image_url",
