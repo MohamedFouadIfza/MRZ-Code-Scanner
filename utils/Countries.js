@@ -182,7 +182,7 @@ const passportCountries = [
   { "name": "Ukraine", "code": "UKR", "full_name": "Ukraine" },
   { "name": "United Arab Emirates", "code": "ARE", "full_name": "United Arab Emirates" },
   { "name": "United Kingdom", "code": "GBR", "full_name": "United Kingdom of Great Britain and Northern Ireland" },
-  { "name": "United States of America", "code": "USA", "full_name": "United States of America" },
+  { "name": "United States", "code": "USA", "full_name": "United States" },
   { "name": "Uruguay", "code": "URY", "full_name": "Oriental Republic of Uruguay" },
   { "name": "Uzbekistan", "code": "UZB", "full_name": "Republic of Uzbekistan" },
   { "name": "Vanuatu", "code": "VUT", "full_name": "Republic of Vanuatu" },
