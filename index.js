@@ -55,7 +55,7 @@ app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (
     console.log('imagepath', req.file.path)
     try {
         if (isPdf) {
-            await pdfToPng(`data/imageDir/${req.file.originalname}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
+            await pdfToPng(`${req.file.path}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2,  pagesToProcess: [1] })
         }
 
         detectQRCode(filePath)
