@@ -82,41 +82,48 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
         console.log("pngPath", pngPath);
         console.log("filePath", filePath);
 
-        fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
-            console.log('File created');
-        });
-        await pdfToPng(filePath, { outputFolder: outputFolder, disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
+        fs.writeFile(filePath, base64Data, { encoding: 'base64' }, async function (err) {
+            if (err) {
+                console.log('file not created', err)
+                res.status(404).json({ er: "cant create pdf file" })
+                return
+            }
 
-        detectQRCode(pngPath)
-            .then(qrCode => {
-                const qMarkIndedx = qrCode.indexOf('?')
-                const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
-                const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
-                fetch(readerUrl).then((response) => {
-                    return response.json()
-                }).then(({ data }) => {
-                    // console.log("data.certificate", data.certificate)
-                    res.status(200).json({
-                        ...data.certificate
+
+            await pdfToPng(filePath, { outputFolder: outputFolder, disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
+
+            detectQRCode(pngPath)
+                .then(qrCode => {
+                    const qMarkIndedx = qrCode.indexOf('?')
+                    const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
+                    const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
+                    fetch(readerUrl).then((response) => {
+                        return response.json()
+                    }).then(({ data }) => {
+                        // console.log("data.certificate", data.certificate)
+                        res.status(200).json({
+                            ...data.certificate
+                        })
                     })
                 })
-            })
-            .catch(err => {
-                res.status(200).json({
-                    of: err
+                .catch(err => {
+                    res.status(200).json({
+                        of: err
+                    })
+                }).finally(() => {
+                    fs.rm(pngPath, (err) => {
+                        if (err) {
+                            console.log('err', err)
+                        }
+                    })
+                    fs.rm(filePath, (err) => {
+                        if (err) {
+                            console.log('err', err)
+                        }
+                    })
                 })
-            }).finally(() => {
-                fs.rm(pngPath, (err) => {
-                    if (err) {
-                        console.log('err', err)
-                    }
-                })
-                fs.rm(filePath, (err) => {
-                    if (err) {
-                        console.log('err', err)
-                    }
-                })
-            })
+        });
+
     } catch (e) {
         res.status(500).json({
             erorr: e
