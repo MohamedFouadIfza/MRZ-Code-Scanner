@@ -39,20 +39,26 @@ app.get('/', async (req, res) => {
 
 
 app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
-    
 
-    console.log('file',req.file)
+
+    console.log('file', req.file)
     if (!req.file) {
         res.status(400).json({
             erorr: "No File"
         })
         return
     }
+    const isPdf = req.file.path.includes(".pdf")
 
-    const imagePath = req.file.path;
+    const filePath = isPdf ? req.file.path.replace(".pdf", "_page_1.png") : req.file.path
 
+    console.log('imagepath', req.file.path)
     try {
-        detectQRCode(imagePath)
+        if (isPdf) {
+            await pdfToPng(`data/imageDir/${req.file.originalname}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
+        }
+
+        detectQRCode(filePath)
             .then(qrCode => {
                 const qMarkIndedx = qrCode.indexOf('?')
                 const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
@@ -60,7 +66,7 @@ app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (
                 fetch(readerUrl).then((response) => {
                     return response.json()
                 }).then(({ data }) => {
-                    console.log("data.certificate",data.certificate)
+                    console.log("data.certificate", data.certificate)
                     res.status(200).json({
                         ...data.certificate
                     })
@@ -71,11 +77,18 @@ app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (
                     of: err
                 })
             }).finally(() => {
-                fs.rm(imagePath, (err) => {
+                fs.rm(filePath, (err) => {
                     if (err) {
                         console.log('err', err)
                     }
                 })
+                if (isPdf) {
+                    fs.rm(req.file.path, (err) => {
+                        if (err) {
+                            console.log('err', err)
+                        }
+                    })
+                }
             })
     } catch (e) {
         res.status(500).json({
