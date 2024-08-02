@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
-app.use(express.json({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 
@@ -42,14 +42,15 @@ app.get('/', async (req, res) => {
 
 app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
-    const base64Data = req.body.image
-    const filePath = __dirname + '/data/imageDir/image.pdf'
-    const pngPath = filePath.replace(".pdf", "_page_1.png")
-    fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
-        console.log('File created');
-    });
+
 
     try {
+        const base64Data = req.body.image
+        const filePath = __dirname + '/data/imageDir/image.pdf'
+        const pngPath = filePath.replace(".pdf", "_page_1.png")
+        fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
+            console.log('File created');
+        });
         await pdfToPng(filePath, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
 
         detectQRCode(pngPath)
