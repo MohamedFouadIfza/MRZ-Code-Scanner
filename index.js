@@ -12,7 +12,8 @@ const { passportCountries, extractCountryName } = require('./utils/Countries')
 const { convertToDate, formateGPTDate } = require('./utils');
 const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
-const { detectQRCode } = require('./utils/QRCode')
+const { detectQRCode } = require('./utils/QRCode');
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'data/imageDir') // Uploads folder
@@ -38,27 +39,20 @@ app.get('/', async (req, res) => {
 })
 
 
-app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
 
+app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
-    console.log('file', req.file)
-    if (!req.file) {
-        res.status(400).json({
-            erorr: "No File"
-        })
-        return
-    }
-    const isPdf = req.file.path.includes(".pdf")
+    const base64Data = req.body.image
+    const filePath = __dirname + '/data/imageDir/image.pdf'
+    const pngPath = filePath.replace(".pdf", "_page_1.png")
+    fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
+        console.log('File created');
+    });
 
-    const filePath = isPdf ? req.file.path.replace(".pdf", "_page_1.png") : req.file.path
-
-    console.log('imagepath', req.file.path)
     try {
-        if (isPdf) {
-            await pdfToPng(`${req.file.path}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2,  pagesToProcess: [1] })
-        }
+        await pdfToPng(filePath, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
 
-        detectQRCode(filePath)
+        detectQRCode(pngPath)
             .then(qrCode => {
                 const qMarkIndedx = qrCode.indexOf('?')
                 const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
@@ -77,18 +71,16 @@ app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (
                     of: err
                 })
             }).finally(() => {
+                fs.rm(pngPath, (err) => {
+                    if (err) {
+                        console.log('err', err)
+                    }
+                })
                 fs.rm(filePath, (err) => {
                     if (err) {
                         console.log('err', err)
                     }
                 })
-                if (isPdf) {
-                    fs.rm(req.file.path, (err) => {
-                        if (err) {
-                            console.log('err', err)
-                        }
-                    })
-                }
             })
     } catch (e) {
         res.status(500).json({
@@ -98,6 +90,68 @@ app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (
     }
 
 });
+
+
+// app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
+
+
+//     console.log('file', req.file)
+//     if (!req.file) {
+//         res.status(400).json({
+//             erorr: "No File"
+//         })
+//         return
+//     }
+//     const isPdf = req.file.path.includes(".pdf")
+
+//     const filePath = isPdf ? req.file.path.replace(".pdf", "_page_1.png") : req.file.path
+
+//     console.log('imagepath', req.file.path)
+//     try {
+//         if (isPdf) {
+//             await pdfToPng(`${req.file.path}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2,  pagesToProcess: [1] })
+//         }
+
+//         detectQRCode(filePath)
+//             .then(qrCode => {
+//                 const qMarkIndedx = qrCode.indexOf('?')
+//                 const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
+//                 const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
+//                 fetch(readerUrl).then((response) => {
+//                     return response.json()
+//                 }).then(({ data }) => {
+//                     console.log("data.certificate", data.certificate)
+//                     res.status(200).json({
+//                         ...data.certificate
+//                     })
+//                 })
+//             })
+//             .catch(err => {
+//                 res.status(200).json({
+//                     of: err
+//                 })
+//             }).finally(() => {
+//                 fs.rm(filePath, (err) => {
+//                     if (err) {
+//                         console.log('err', err)
+//                     }
+//                 })
+//                 if (isPdf) {
+//                     fs.rm(req.file.path, (err) => {
+//                         if (err) {
+//                             console.log('err', err)
+//                         }
+//                     })
+//                 }
+//             })
+//     } catch (e) {
+//         res.status(500).json({
+//             erorr: e
+//         })
+//         console.log('eeee', e)
+//     }
+
+// });
 
 
 // documentCode: 'P',
