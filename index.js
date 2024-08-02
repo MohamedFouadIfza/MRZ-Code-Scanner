@@ -13,6 +13,8 @@ const { convertToDate, formateGPTDate } = require('./utils');
 const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
 const { detectQRCode } = require('./utils/QRCode');
+const path = require('path')
+const sharp = require('sharp');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -29,6 +31,7 @@ const upload = multer({ storage: storage })
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.get('/', async (req, res) => {
@@ -39,15 +42,16 @@ app.get('/', async (req, res) => {
 })
 
 
+app.get('/data', (req, res) => {
+    res.send(path.join(__dirname, "public", "MED.pdf"))
+})
 
 app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
-
-
     try {
         const base64Data = req.body.image
-        const filePath = __dirname + '/data/imageDir/image.pdf'
-        const pngPath = filePath.replace(".pdf", "_page_1.png")
+        const filePath = path.join(__dirname, "data", "imageDir", "image.pdf")
+        const pngPath = path.join(__dirname, "data", "imageDir", "image_page_1.png")  //filePath.replace(".pdf", "image_page_1.png")
         fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
             console.log('File created');
         });
@@ -61,7 +65,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                 fetch(readerUrl).then((response) => {
                     return response.json()
                 }).then(({ data }) => {
-                    console.log("data.certificate", data.certificate)
+                    // console.log("data.certificate", data.certificate)
                     res.status(200).json({
                         ...data.certificate
                     })
@@ -93,66 +97,66 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 });
 
 
-// app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
+app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
 
 
-//     console.log('file', req.file)
-//     if (!req.file) {
-//         res.status(400).json({
-//             erorr: "No File"
-//         })
-//         return
-//     }
-//     const isPdf = req.file.path.includes(".pdf")
+    console.log('file', req.file)
+    if (!req.file) {
+        res.status(400).json({
+            erorr: "No File"
+        })
+        return
+    }
+    const isPdf = req.file.path.includes(".pdf")
 
-//     const filePath = isPdf ? req.file.path.replace(".pdf", "_page_1.png") : req.file.path
+    const filePath = isPdf ? req.file.path.replace(".pdf", "_page_1.png") : req.file.path
 
-//     console.log('imagepath', req.file.path)
-//     try {
-//         if (isPdf) {
-//             await pdfToPng(`${req.file.path}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2,  pagesToProcess: [1] })
-//         }
+    console.log('imagepath', req.file.path)
+    try {
+        if (isPdf) {
+            await pdfToPng(`${req.file.path}`, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
+        }
 
-//         detectQRCode(filePath)
-//             .then(qrCode => {
-//                 const qMarkIndedx = qrCode.indexOf('?')
-//                 const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
-//                 const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
-//                 fetch(readerUrl).then((response) => {
-//                     return response.json()
-//                 }).then(({ data }) => {
-//                     console.log("data.certificate", data.certificate)
-//                     res.status(200).json({
-//                         ...data.certificate
-//                     })
-//                 })
-//             })
-//             .catch(err => {
-//                 res.status(200).json({
-//                     of: err
-//                 })
-//             }).finally(() => {
-//                 fs.rm(filePath, (err) => {
-//                     if (err) {
-//                         console.log('err', err)
-//                     }
-//                 })
-//                 if (isPdf) {
-//                     fs.rm(req.file.path, (err) => {
-//                         if (err) {
-//                             console.log('err', err)
-//                         }
-//                     })
-//                 }
-//             })
-//     } catch (e) {
-//         res.status(500).json({
-//             erorr: e
-//         })
-//         console.log('eeee', e)
-//     }
+        detectQRCode(filePath)
+            .then(qrCode => {
+                const qMarkIndedx = qrCode.indexOf('?')
+                const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
+                const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
+                fetch(readerUrl).then((response) => {
+                    return response.json()
+                }).then(({ data }) => {
+                    console.log("data.certificate", data.certificate)
+                    res.status(200).json({
+                        ...data.certificate
+                    })
+                })
+            })
+            .catch(err => {
+                res.status(200).json({
+                    of: err
+                })
+            }).finally(() => {
+                fs.rm(filePath, (err) => {
+                    if (err) {
+                        console.log('err', err)
+                    }
+                })
+                if (isPdf) {
+                    fs.rm(req.file.path, (err) => {
+                        if (err) {
+                            console.log('err', err)
+                        }
+                    })
+                }
+            })
+    } catch (e) {
+        res.status(500).json({
+            erorr: e
+        })
+        console.log('eeee', e)
+    }
 
-// });
+});
 
 
 // documentCode: 'P',

@@ -17,7 +17,7 @@ async function detectQRCode(imagePath) {
         // Preprocess the image if needed
         image.grayscale(); // Convert to grayscale
         image.contrast(1); // Increase contrast
-
+        
         // Get image dimensions
         const { width, height } = image.bitmap;
 
