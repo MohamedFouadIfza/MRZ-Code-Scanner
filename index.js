@@ -12,6 +12,7 @@ const { passportCountries, extractCountryName } = require('./utils/Countries')
 const { convertToDate, formateGPTDate } = require('./utils');
 const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
+const { detectQRCode } = require('./utils/QRCode')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'data/imageDir') // Uploads folder
@@ -35,6 +36,55 @@ app.get('/', async (req, res) => {
         satus: "it's work",
     })
 })
+
+
+app.post('/ExtractMediaclCertificateInfo', upload.single('certificate'), async (req, res) => {
+    
+
+    console.log('file',req.file)
+    if (!req.file) {
+        res.status(400).json({
+            erorr: "No File"
+        })
+        return
+    }
+
+    const imagePath = req.file.path;
+
+    try {
+        detectQRCode(imagePath)
+            .then(qrCode => {
+                const qMarkIndedx = qrCode.indexOf('?')
+                const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
+                const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
+                fetch(readerUrl).then((response) => {
+                    return response.json()
+                }).then(({ data }) => {
+                    console.log("data.certificate",data.certificate)
+                    res.status(200).json({
+                        ...data.certificate
+                    })
+                })
+            })
+            .catch(err => {
+                res.status(200).json({
+                    of: err
+                })
+            }).finally(() => {
+                fs.rm(imagePath, (err) => {
+                    if (err) {
+                        console.log('err', err)
+                    }
+                })
+            })
+    } catch (e) {
+        res.status(500).json({
+            erorr: e
+        })
+        console.log('eeee', e)
+    }
+
+});
 
 
 // documentCode: 'P',
