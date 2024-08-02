@@ -12,7 +12,7 @@ async function detectQRCode(imagePath) {
     try {
         // Load the image
         const image = await Jimp.read(imagePath);
-        // console.log(`Image loaded: ${imagePath}`);
+        console.log(`Image loaded: ${imagePath}`);
 
         // Preprocess the image if needed
         image.grayscale(); // Convert to grayscale
