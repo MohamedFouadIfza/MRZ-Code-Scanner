@@ -14,7 +14,7 @@ const { deleteAllFilesFormOS } = require('./utils/file');
 const { getPassportDetails } = require('./utils/GPT');
 const { detectQRCode } = require('./utils/QRCode');
 const path = require('path')
-const sharp = require('sharp');
+// const sharp = require('sharp');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
