@@ -78,13 +78,14 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
         const base64Data = req.body.image
         const filePath = path.join(__dirname, "data", "imageDir", "image.pdf")
         const pngPath = path.join(__dirname, "data", "imageDir", "image_page_1.png")  //filePath.replace(".pdf", "image_page_1.png")
+        const outputFolder = path.join(__dirname, "data", "imageDir")
         console.log("pngPath", pngPath);
         console.log("filePath", filePath);
 
         fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
             console.log('File created');
         });
-        await pdfToPng(filePath, { outputFolder: "./data/imageDir", disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
+        await pdfToPng(filePath, { outputFolder: outputFolder, disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
 
         detectQRCode(pngPath)
             .then(qrCode => {
@@ -103,6 +104,17 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             .catch(err => {
                 res.status(200).json({
                     of: err
+                })
+            }).finally(() => {
+                fs.rm(pngPath, (err) => {
+                    if (err) {
+                        console.log('err', err)
+                    }
+                })
+                fs.rm(filePath, (err) => {
+                    if (err) {
+                        console.log('err', err)
+                    }
                 })
             })
     } catch (e) {
