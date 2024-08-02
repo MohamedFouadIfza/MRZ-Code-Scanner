@@ -31,8 +31,34 @@ const upload = multer({ storage: storage })
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'data')));
 
+// app.get('file', (req, res) => {
+//     res.status(200).send()
+// })
+
+app.get('/delet', (req, res) => {
+    try {
+        const filePath = path.join(__dirname, "data", "imageDir", "image.pdf")
+        const pngPath = path.join(__dirname, "data", "imageDir", "image_page_1.png")
+
+        fs.rm(pngPath, (err) => {
+            if (err) {
+                console.log('err', err)
+            }
+        })
+        fs.rm(filePath, (err) => {
+            if (err) {
+                console.log('err', err)
+            }
+        })
+
+        res.status(200).json({ done: "done" })
+    } catch (e) {
+        res.status(400).json(e)
+    }
+
+})
 
 app.get('/', async (req, res) => {
 
@@ -42,9 +68,9 @@ app.get('/', async (req, res) => {
 })
 
 
-app.get('/data', (req, res) => {
-    res.send(path.join(__dirname, "public", "MED.pdf"))
-})
+// app.get('/data', (req, res) => {
+//     res.send(path.join(__dirname, "public", "MED.pdf"))
+// })
 
 app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
@@ -52,10 +78,13 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
         const base64Data = req.body.image
         const filePath = path.join(__dirname, "data", "imageDir", "image.pdf")
         const pngPath = path.join(__dirname, "data", "imageDir", "image_page_1.png")  //filePath.replace(".pdf", "image_page_1.png")
+        console.log("pngPath", pngPath);
+        console.log("filePath", filePath);
+
         fs.writeFile(filePath, base64Data, { encoding: 'base64' }, function (err) {
             console.log('File created');
         });
-        await pdfToPng(filePath, { outputFolder: "./data/imageDir", disableFontFace: false, viewportScale: 2, pagesToProcess: [1] })
+        await pdfToPng(filePath, { outputFolder: "./data/imageDir", disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
 
         detectQRCode(pngPath)
             .then(qrCode => {
@@ -74,17 +103,6 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             .catch(err => {
                 res.status(200).json({
                     of: err
-                })
-            }).finally(() => {
-                fs.rm(pngPath, (err) => {
-                    if (err) {
-                        console.log('err', err)
-                    }
-                })
-                fs.rm(filePath, (err) => {
-                    if (err) {
-                        console.log('err', err)
-                    }
                 })
             })
     } catch (e) {
