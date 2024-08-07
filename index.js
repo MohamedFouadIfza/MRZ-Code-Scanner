@@ -72,16 +72,20 @@ app.get('/', async (req, res) => {
 //     res.send(path.join(__dirname, "public", "MED.pdf"))
 // })
 
+
 app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
     try {
         const base64Data = req.body.image
-        const filePath = path.join(__dirname, "data", "imageDir", "image.pdf")
-        const pngPath = path.join(__dirname, "data", "imageDir", "image_page_1.png")  //filePath.replace(".pdf", "image_page_1.png")
+        const visaID = req.body?.id || "default" 
+        const filePath = path.join(__dirname, "data", "imageDir", `${visaID}.pdf`)
+        const pngPath = path.join(__dirname, "data", "imageDir", `${visaID}_page_1.png`)  //filePath.replace(".pdf", "image_page_1.png")
         const outputFolder = path.join(__dirname, "data", "imageDir")
-        console.log("pngPath", pngPath);
-        console.log("filePath", filePath);
+        // console.log("pngPath", pngPath);
+        // console.log("filePath", filePath);
 
+        console.log(visaID)
+        
         fs.writeFile(filePath, base64Data, { encoding: 'base64' }, async function (err) {
             if (err) {
                 console.log('file not created', err)
