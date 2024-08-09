@@ -80,6 +80,9 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             const passportRegex2 = /Passport Number\s*(\w+)/i;
             const fitnessResultRegex2 = /Medically Fit|لائق طبياً/g;
 
+            const passportRegex3 = /Passport No\.\s*(\w+)/i;
+            const fitnessResultRegex3 = /Medical Fitness Result:\s*“\s*(\w+)\s*”/i;
+
             const wordRegex = /لائق/g;
 
             ////////////////////////////////////////////////////////
@@ -95,7 +98,19 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
             const matchDoc1 = text.match(wordRegex);
 
-            if (passportMatch1 && fitnessResultMatch1) {
+            const passportMatch3 = text.match(passportRegex3);
+            const fitnessResultMatch3 = text.match(fitnessResultRegex3);
+
+
+
+            if (passportMatch3 && fitnessResultMatch3) {
+                const passportNumber = passportMatch3[1];
+                const medicalFitnessResult = fitnessResultMatch3[1];
+                res.status(200).json({
+                    passportNum: passportNumber,
+                    result: medicalFitnessResult
+                })
+            } else if (passportMatch1 && fitnessResultMatch1) {
                 const passportNumber = passportMatch1[1];
                 const fitnessResult = fitnessResultMatch1[1];
                 res.status(200).json({
@@ -131,77 +146,6 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                 console.log('Could not extract the required information.');
             }
         });
-
-        // fs.writeFile(filePath, base64Data, { encoding: 'base64' }, async function (err) {
-        //     if (err) {
-        //         console.log('file not created', err)
-        //         res.status(404).json({ er: "cant create pdf file" })
-        //         return
-        //     }
-        //     let dataBuffer = Buffer.from(base64Data, 'base64')
-        //     pdf(dataBuffer).then(function (data) {
-
-        //         // The text content of the PDF
-        //         const text = data.text;
-
-        //         // Use regular expressions to extract the information
-        //         const passportRegex = /Passport No\.\s*(\d+)/i;
-        //         const fitnessResultRegex = /Medical Fitness Result\s*“\s*(\w+)\s*”/i;
-
-        //         const passportMatch = text.match(passportRegex);
-        //         const fitnessResultMatch = text.match(fitnessResultRegex);
-
-        //         if (passportMatch && fitnessResultMatch) {
-        //             const passportNumber = passportMatch[1];
-        //             const fitnessResult = fitnessResultMatch[1];
-
-        //             res.status(200).json({
-        //                 passportNum: passportNumber,
-        //                 result: fitnessResult
-        //             })
-        //             console.log(`Passport Number: ${passportNumber}`);
-        //             console.log(`Medical Fitness Result: ${fitnessResult}`);
-        //         } else {
-        //             res.status(400).json({
-        //                 passportNum: 0
-        //             })
-        //             console.log('Could not extract the required information.');
-        //         }
-        //     });
-
-        //     // await pdfToPng(filePath, { outputFolder: outputFolder, disableFontFace: true, viewportScale: 2, pagesToProcess: [1] })
-
-        //     // detectQRCode(pngPath)
-        //     //     .then(qrCode => {
-        //     //         const qMarkIndedx = qrCode.indexOf('?')
-        //     //         const qrCodeLink = qrCode.slice(qMarkIndedx, qrCode.length)
-        //     //         const readerUrl = `https://salemsystem.dubaihealth.ae/revamp-portal/restapi/revamp/application/certificate/scan${qrCodeLink}`
-        //     //         fetch(readerUrl).then((response) => {
-        //     //             return response.json()
-        //     //         }).then(({ data }) => {
-        //     //             // console.log("data.certificate", data.certificate)
-        //     //             res.status(200).json({
-        //     //                 ...data.certificate
-        //     //             })
-        //     //         })
-        //     //     })
-        //     //     .catch(err => {
-        //     //         res.status(200).json({
-        //     //             of: err
-        //     //         })
-        //     //     }).finally(() => {
-        //     //         fs.rm(pngPath, (err) => {
-        //     //             if (err) {
-        //     //                 console.log('err', err)
-        //     //             }
-        //     //         })
-        //     //         fs.rm(filePath, (err) => {
-        //     //             if (err) {
-        //     //                 console.log('err', err)
-        //     //             }
-        //     //         })
-        //     //     })
-        // });
 
     } catch (e) {
         res.status(500).json({
