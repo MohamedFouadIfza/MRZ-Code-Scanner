@@ -73,13 +73,26 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             // Use regular expressions to extract the information
             const passportRegex = /Passport No\.\s*(\d+)/i;
             const fitnessResultRegex = /Medical Fitness Result\s*“\s*(\w+)\s*”/i;
+
             const passportRegex1 = /Passport No\.\s*(\w+)/i;
             const fitnessResultRegex1 = /Medical Fitness Result\s*“\s*(\w+)\s*”/i;
+
+            const passportRegex2 = /Passport Number\s*(\w+)/i;
+            const fitnessResultRegex2 = /Medically Fit|لائق طبياً/g;
+
             const wordRegex = /لائق/g;
+
+            ////////////////////////////////////////////////////////
+
             const passportMatch = text.match(passportRegex);
             const fitnessResultMatch = text.match(fitnessResultRegex);
+
             const passportMatch1 = text.match(passportRegex1);
             const fitnessResultMatch1 = text.match(fitnessResultRegex1);
+
+            const passportMatch2 = text.match(passportRegex2);
+            const fitnessResultMatch2 = text.match(fitnessResultRegex2);
+
             const matchDoc1 = text.match(wordRegex);
 
             if (passportMatch1 && fitnessResultMatch1) {
@@ -97,7 +110,16 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                     passportNum: passportNumber,
                     result: fitnessResult
                 })
+            } else if (passportMatch2 && fitnessResultMatch2) {
+                const passportNumber = passportMatch2[1];
+                const fitnessResult = fitnessResultMatch2[0];
+                console.log("includted arabic and has passport")
+                res.status(200).json({
+                    passportNum: passportNumber,
+                    result: fitnessResult.replace("Medically ", "").toUpperCase()
+                })
             } else if (matchDoc1) {
+                console.log("includted arabic")
                 res.status(200).json({
                     passportNum: "0",
                     result: "FIT"
