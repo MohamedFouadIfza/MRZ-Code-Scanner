@@ -16,8 +16,11 @@ const fs = require('fs');
 // const {  } = require('ocr-tools');
 // var {  } = require('ocr');
 const pdf = require('pdf-parse');
+// tWWpWb2qhJNjUghmtlOawEn6SX6
 // const { detectQRCode } = require('./utils/QRCode');
-const path = require('path')
+const path = require('path');
+const { sendPassport, getApplicantActions, getApplicantReviewStatus, getApplicant, createApplicatntAction, fireOCR } = require('./sumSub');
+const axios = require('axios').default
 // const sharp = require('sharp');
 
 // const storage = multer.diskStorage({
@@ -41,13 +44,100 @@ app.use(express.static(path.join(__dirname, 'data')));
 //     res.status(200).send()
 // })
 
+app.post('/sendPassport', async (req, res) => {
+
+    const {
+        applicantId,
+        base64,
+        fileName,
+        country
+    } = req.body
+
+    const fileDIr = path.join(__dirname, "resources");
+
+    fs.writeFile(`${fileDIr}/${fileName}`, base64, { encoding: "base64" }, (err) => {
+        if (err) {
+            console.log("errr", err)
+            res.status(400).json({
+                err
+            })
+            return
+        }
+
+
+        sendPassport(applicantId, `${fileDIr}/${fileName}`, {
+            country,
+            idDocType: "PASSPORT"
+        }).then((sentRes) => {
+
+            setTimeout(() => {
+                fireOCR(applicantId).then(() => {
+                    res.status(200).json({
+                        ...sentRes
+                    })
+                }).catch((fireOCREror) => {
+
+                    console.log("fireOCREror", {
+                        ...fireOCREror
+                    })
+
+                    res.status(400).json({
+                        fireOCREror
+                    })
+                })
+            }, 10000);
+
+        }).catch((sendErr) => {
+            console.log("sendErr", sendErr)
+            if (sendErr?.data?.maxDataSize) {
+                res.status(400).json({
+                    err: "file is to large max file size is 209 kb"
+                })
+                return
+            }
+            res.status(400).json({
+                err: sendErr?.data || ""
+            })
+
+        }).finally(() => {
+            fs.rm(`${fileDIr}/${fileName}`, (err) => {
+                if (err) {
+                    res.status(400).json({
+                        err
+                    })
+                    return
+                }
+                console.log("file deleted")
+            })
+        })
+
+    })
+    // fireOCR(applicantId).then((re) => { console.log("re", re.data) }).catch((er) => { console.log("er", er) })
+    // getApplicant(applicantId).then((re) => {
+    //     console.log("re", { ...re.data.info.idDocs })
+    // }).catch((er) => { console.log("er", er) })
+
+    // getApplicantReviewStatus(applicantId).then((re) => { console.log("re", re.data) }).catch((er) => { console.log("er", er) })
+
+    // sendPassport(applicantId, {
+    //     country: "NLD",
+    //     idDocType: "PASSPORT"
+    // }).then((res) => {
+    //     console.log('res', res)
+    // }).catch((er) => {
+    //     console.log("er", er)
+    // })
+
+    // getApplicantReviewStatus(applicantId).then((re) => { console.log("re", re) }).catch((er) => { console.log("er", er) })
+
+})
+
 app.get('/', async (req, res) => {
 
     res.status(200).json({
         satus: "it's work",
     })
 })
-
 
 
 
