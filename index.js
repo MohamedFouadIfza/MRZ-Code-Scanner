@@ -147,13 +147,6 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
     try {
         const base64Data = req.body.image
         const visaID = req.body?.id || "default"
-        // const filePath = path.join(__dirname, "data", "imageDir", `${visaID}.pdf`)
-        // const pngPath = path.join(__dirname, "data", "imageDir", `${visaID}_page_1.png`)  //filePath.replace(".pdf", "image_page_1.png")
-        // const outputFolder = path.join(__dirname, "data", "imageDir")
-        // console.log("pngPath", pngPath);
-        // console.log("filePath", filePath);
-
-        console.log(visaID)
 
         let dataBuffer = Buffer.from(base64Data, 'base64')
         pdf(dataBuffer).then(function (data) {
@@ -173,8 +166,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             const passportRegex3 = /Passport No\.\s*(\w+)/i;
             const fitnessResultRegex3 = /Medical Fitness Result:\s*“\s*(\w+)\s*”/i;
 
-            const wordRegex = /لائق/g;
-
+            const wordRegex2 = /لائق طبيا/g;
             ////////////////////////////////////////////////////////
 
             const passportMatch = text.match(passportRegex);
@@ -186,7 +178,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             const passportMatch2 = text.match(passportRegex2);
             const fitnessResultMatch2 = text.match(fitnessResultRegex2);
 
-            const matchDoc1 = text.match(wordRegex);
+            const matchDoc1 = text.match(wordRegex2);
 
             const passportMatch3 = text.match(passportRegex3);
             const fitnessResultMatch3 = text.match(fitnessResultRegex3);
@@ -194,6 +186,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
 
 
             if (passportMatch3 && fitnessResultMatch3) {
+                console.log("goverment of dubai", visaID)
                 const passportNumber = passportMatch3[1];
                 const medicalFitnessResult = fitnessResultMatch3[1];
                 res.status(200).json({
@@ -201,6 +194,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                     result: medicalFitnessResult
                 })
             } else if (passportMatch1 && fitnessResultMatch1) {
+                console.log("Salem", visaID)
                 const passportNumber = passportMatch1[1];
                 const fitnessResult = fitnessResultMatch1[1];
                 res.status(200).json({
@@ -208,6 +202,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                     result: fitnessResult
                 })
             } else if (passportMatch && fitnessResultMatch) {
+                console.log("third doc", visaID)
                 const passportNumber = passportMatch[1];
                 const fitnessResult = fitnessResultMatch[1];
 
@@ -216,6 +211,7 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                     result: fitnessResult
                 })
             } else if (passportMatch2 && fitnessResultMatch2) {
+                console.log("Laiq arabic", visaID)
                 const passportNumber = passportMatch2[1];
                 const fitnessResult = fitnessResultMatch2[0];
                 console.log("includted arabic and has passport")
@@ -224,16 +220,16 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
                     result: fitnessResult.replace("Medically ", "").toUpperCase()
                 })
             } else if (matchDoc1) {
-                console.log("includted arabic")
+                console.log("EHC arabic without passport number", visaID)
                 res.status(200).json({
-                    passportNum: "0",
+                    passportNum: "No Passport Number",
                     result: "FIT"
                 })
             } else {
                 res.status(200).json({
-                    passportNum: "0"
+                    passportNum: "image resolution is not good or worng file"
                 })
-                console.log('Could not extract the required information.');
+                console.log('image resolution is not good', visaID);
             }
         });
 
