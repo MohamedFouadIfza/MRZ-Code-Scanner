@@ -222,13 +222,15 @@ app.post('/ExtractMediaclCertificateInfo/pdf', async (req, res) => {
             } else if (matchDoc1) {
                 console.log("EHC arabic without passport number", visaID)
                 res.status(200).json({
-                    passportNum: "No Passport Number",
+                    passportNum: "0",
                     result: "FIT"
                 })
+                // passportNum: "No Passport Number",
             } else {
                 res.status(200).json({
-                    passportNum: "image resolution is not good or worng file"
+                    passportNum: "0"
                 })
+                // passportNum: "image resolution is not good or worng file"
                 console.log('image resolution is not good', visaID);
             }
         });
