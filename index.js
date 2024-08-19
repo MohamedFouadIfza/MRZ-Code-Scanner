@@ -48,7 +48,7 @@ app.use(express.static(path.join(__dirname, 'data')));
 app.get('/convertedJson/:id', async (req, res) => {
 
     const filePath = path.join(__dirname, "convertedJson", `${req.params.id}.json`);
-    console.log("yes", filePath)
+    // console.log("yes", filePath)
 
     res.download(filePath, `${req.params.id}.json`, (err) => {
         if (err) {
@@ -66,12 +66,12 @@ app.post('/convertjsontofile/:id', async (req, res) => {
     const id = req.params.id
     const json = req.body
 
-    console.log("json", json)
+    // console.log("json", json)
     const filePath = path.join(__dirname, "convertedJson");
 
     const downloadPath = path.join(env == "development" ? "http://localhost:3000" : "https://mrz-code-scanner.onrender.com", "convertedJson", `${id}`);
     const data = JSON.stringify(json, null, 2)
-    console.log("dta", data)
+    // console.log("dta", data)
     fs.writeFile(`${filePath}/${id}.json`, data, 'utf8', (err) => {
         if (err) {
             res.status(400).json({
