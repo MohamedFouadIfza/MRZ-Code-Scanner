@@ -21,6 +21,7 @@ const pdf = require('pdf-parse');
 const path = require('path');
 const { sendPassport, getApplicantActions, getApplicantReviewStatus, getApplicant, createApplicatntAction, fireOCR } = require('./sumSub');
 const axios = require('axios').default
+var env = process.env.NODE_ENV || 'development'
 // const sharp = require('sharp');
 
 // const storage = multer.diskStorage({
@@ -39,11 +40,57 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(express.static(path.join(__dirname, 'data')));
+// app.use(express.static("convertedJson"));
 
 // app.get('file', (req, res) => {
 //     res.status(200).send()
 // })
+app.get('/convertedJson/:id', async (req, res) => {
 
+    const filePath = path.join(__dirname, "convertedJson", `${req.params.id}.json`);
+    console.log("yes", filePath)
+
+    res.download(filePath, `${req.params.id}.json`, (err) => {
+        if (err) {
+            res.status(400).json({
+                err
+            })
+            return
+        }
+
+
+    })
+})
+
+app.post('/convertjsontofile', async (req, res) => {
+
+    const {
+        json,
+        id
+    } = req.body
+
+    const filePath = path.join(__dirname, "convertedJson");
+
+    const downloadPath = path.join(env == "development" ? "http://localhost:3000" : "https://mrz-code-scanner.onrender.com", "convertedJson", `${id}.json`);
+    const data = JSON.stringify(json)
+
+    fs.writeFile(`${filePath}/${id}.json`, data, 'utf-8', (err) => {
+        if (err) {
+            res.status(400).json({
+                err
+            })
+            return
+        }
+
+        res.download(filePath)
+
+        res.status(200).json({
+            downloadURL: downloadPath
+        })
+    })
+
+
+})
 app.post('/sendPassport', async (req, res) => {
 
     const {
