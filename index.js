@@ -73,9 +73,10 @@ app.post('/convertjsontofile', async (req, res) => {
     const filePath = path.join(__dirname, "convertedJson");
 
     const downloadPath = path.join(env == "development" ? "http://localhost:3000" : "https://mrz-code-scanner.onrender.com", "convertedJson", `${id}`);
-    const data = JSON.stringify(json)
+    const data = JSON.stringify(json,)
 
-    fs.writeFile(`${filePath}/${id}.json`, data, 'utf-8', (err) => {
+    console.log("data",data)
+    fs.writeFile(`${filePath}/${id}.json`, data, 'utf8', (err) => {
         if (err) {
             res.status(400).json({
                 err
