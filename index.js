@@ -62,12 +62,9 @@ app.get('/convertedJson/:id', async (req, res) => {
     })
 })
 
-app.post('/convertjsontofile', async (req, res) => {
-
-    const {
-        json,
-        id
-    } = req.body
+app.post('/convertjsontofile/:id', async (req, res) => {
+    const id = req.params.id
+    const json = req.body
 
     console.log("json", json)
     const filePath = path.join(__dirname, "convertedJson");
