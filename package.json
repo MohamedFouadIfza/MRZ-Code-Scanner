@@ -67,7 +67,7 @@
     "ocr-tools": "^0.1.1",
     "radians-degrees": "^1.0.0",
     "request": "^2.87.0",
-    "request-promise": "^4.2.2",
+    "request-promise": "^4.2.6",
     "transformation-matrix": "^1.7.0"
   }
 }
